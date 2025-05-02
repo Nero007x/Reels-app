@@ -4,20 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Reel, ReelProps } from './Reel';
 import styles from './ReelsFeed.module.css';
 
-// Public domain videos that should work better
-const SAMPLE_VIDEOS = [
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
-];
-
 // Data types
 export interface ReelData extends Omit<ReelProps, 'isActive'> {
   id: string;
@@ -34,6 +20,9 @@ interface ApiResponse {
   reels: ReelData[];
   pagination: PaginationData;
 }
+
+// Generate a random session ID on each page load to randomize videos
+const SESSION_ID = Math.random().toString(36).substring(2, 15);
 
 export const ReelsFeed = () => {
   const [reels, setReels] = useState<ReelData[]>([]);
@@ -66,7 +55,9 @@ export const ReelsFeed = () => {
       // Build the query parameters
       const params = new URLSearchParams({
         page: pagination.page.toString(),
-        limit: reelsPerPage.toString()
+        limit: reelsPerPage.toString(),
+        // Add session ID to force randomization on page refresh
+        session: SESSION_ID
       });
       
       // Add token if we have one (important for pagination)
@@ -74,7 +65,7 @@ export const ReelsFeed = () => {
         params.append('token', pagination.nextToken);
       }
       
-      console.log(`Fetching reels: page=${pagination.page}, token=${pagination.nextToken || 'none'}`);
+      console.log(`Fetching reels: page=${pagination.page}, token=${pagination.nextToken || 'none'}, session=${SESSION_ID}`);
       
       const response = await fetch(`/api/reels?${params.toString()}`);
       
@@ -99,29 +90,9 @@ export const ReelsFeed = () => {
       isFetchingRef.current = false;
     } catch (error) {
       console.error('Error fetching reels:', error);
-      setError('Failed to load videos');
+      setError('Failed to load videos. Please check your connection and try again.');
       setLoading(false);
       isFetchingRef.current = false;
-      
-      // Fallback to mock data if API fails
-      const mockReels: ReelData[] = Array.from({ length: reelsPerPage }, (_, i) => {
-        const id = (pagination.page - 1) * reelsPerPage + i;
-        return {
-          id: `reel-${pagination.page}-${i}`,
-          videoUrl: SAMPLE_VIDEOS[id % SAMPLE_VIDEOS.length],
-          caption: `This is a sample reel caption for reel ${pagination.page}-${i}. #reels #sample #nextjs`,
-          likes: Math.floor(Math.random() * 10000),
-          comments: Math.floor(Math.random() * 1000),
-        };
-      });
-      
-      setReels(prev => pagination.page === 1 ? mockReels : [...prev, ...mockReels]);
-      
-      // For mock data, always set hasMore to true unless we've reached a reasonable limit
-      setPagination(prev => ({
-        ...prev,
-        hasMore: prev.page < 10, // Limit to 10 pages of mock data
-      }));
     }
   };
 
