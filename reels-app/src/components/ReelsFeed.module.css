@@ -1,0 +1,53 @@
+.reelsFeedContainer {
+  width: 100%;
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  position: relative;
+  background-color: black;
+  scrollbar-width: none; /* For Firefox */
+  -ms-overflow-style: none; /* For Internet Explorer and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari, and Opera */
+.reelsFeedContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.reelItem {
+  width: 100%;
+  height: 100vh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* For devices that support it, limit maximum width to maintain 9:16 ratio on wide screens */
+@media (min-aspect-ratio: 9/16) {
+  .reelItem {
+    justify-content: center;
+  }
+}
+
+.loading, .loadingMore {
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+  color: white;
+  background-color: black;
+  font-size: 1rem;
+}
+
+.loading {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loadingMore {
+  height: 50px;
+} 
