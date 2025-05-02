@@ -86,7 +86,7 @@
 
 .muteButton {
   position: absolute;
-  bottom: 150px;
+  bottom: 15px;
   right: 20px;
   background: none;
   border: none;
@@ -105,30 +105,11 @@
 
 .reelInfo {
   position: absolute;
-  bottom: 100px;
+  bottom: 20px;
   left: 20px;
   z-index: 3;
   color: white;
   max-width: 70%;
-}
-
-.userInfo {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #ccc;
-  margin-right: 10px;
-}
-
-.username {
-  font-weight: bold;
-  font-size: 1rem;
 }
 
 .caption {
@@ -163,16 +144,16 @@
 /* Media query for smaller screens */
 @media (max-width: 767px) {
   .reelInfo {
-    bottom: 80px;
+    bottom: 70px;
     max-width: 80%;
   }
   
   .engagementActions {
-    bottom: 80px;
+    bottom: 110px;
   }
   
   .muteButton {
-    bottom: 130px;
+    bottom: 20px;
   }
 }
 

@@ -71,7 +71,6 @@ export const ReelsFeed = () => {
         return {
           id: `reel-${pageNum}-${i}`,
           videoUrl: SAMPLE_VIDEOS[id % SAMPLE_VIDEOS.length],
-          username: `user_${Math.floor(Math.random() * 1000)}`,
           caption: `This is a sample reel caption for reel ${pageNum}-${i}. #reels #sample #nextjs`,
           likes: Math.floor(Math.random() * 10000),
           comments: Math.floor(Math.random() * 1000),
@@ -183,7 +182,6 @@ export const ReelsFeed = () => {
         >
           <Reel 
             videoUrl={reel.videoUrl}
-            username={reel.username}
             caption={reel.caption}
             likes={reel.likes}
             comments={reel.comments}

@@ -23,7 +23,6 @@ const generateMockReels = (page: number, limit: number) => {
     return {
       id: `reel-${id}`,
       videoUrl: SAMPLE_VIDEOS[id % SAMPLE_VIDEOS.length],
-      username: `user_${Math.floor(Math.random() * 1000)}`,
       caption: `This is a sample reel caption for reel ${id}. #reels #sample #nextjs`,
       likes: Math.floor(Math.random() * 10000),
       comments: Math.floor(Math.random() * 1000),

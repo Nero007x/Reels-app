@@ -2,21 +2,24 @@
 
 import { useState, useRef, useEffect } from 'react';
 import styles from './Reel.module.css';
+import { MuteControl } from './MuteControl';
+import { EngagementActions } from './EngagementActions';
+import { ReelDescription } from './ReelDescription';
+import { useMuteContext } from '../context/MuteContext';
 
 export interface ReelProps {
   videoUrl: string;
-  username: string;
   caption: string;
   likes: number;
   comments: number;
   isActive?: boolean;
 }
 
-export const Reel = ({ videoUrl, username, caption, likes, comments, isActive = false }: ReelProps) => {
+export const Reel = ({ videoUrl, caption, likes, comments, isActive = false }: ReelProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
   const [hasError, setHasError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { isMuted } = useMuteContext();
 
   // Handle play/pause
   const togglePlay = () => {
@@ -33,14 +36,12 @@ export const Reel = ({ videoUrl, username, caption, likes, comments, isActive = 
     }
   };
 
-  // Handle mute/unmute
-  const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  // Update video mute state when global mute changes
+  useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
+      videoRef.current.muted = isMuted;
     }
-  };
+  }, [isMuted]);
 
   // Auto-play when reel becomes active
   useEffect(() => {
@@ -94,36 +95,14 @@ export const Reel = ({ videoUrl, username, caption, likes, comments, isActive = 
           {!isPlaying && !hasError && <div className={styles.playIcon}>▶</div>}
         </div>
 
-        {!hasError && (
-          <button 
-            className={styles.muteButton} 
-            onClick={toggleMute}
-          >
-            {isMuted ? '🔇' : '🔊'}
-          </button>
-        )}
+        <MuteControl hasError={hasError} />
       </div>
       
-      {/* Reel Info */}
-      <div className={styles.reelInfo}>
-        <div className={styles.userInfo}>
-          <div className={styles.avatar}></div>
-          <span className={styles.username}>{username}</span>
-        </div>
-        <p className={styles.caption}>{caption}</p>
-      </div>
+      {/* Reel Description */}
+      <ReelDescription caption={caption} />
       
       {/* Engagement Actions */}
-      <div className={styles.engagementActions}>
-        <div className={styles.action}>
-          <div className={styles.actionIcon}>❤️</div>
-          <span>{likes}</span>
-        </div>
-        <div className={styles.action}>
-          <div className={styles.actionIcon}>💬</div>
-          <span>{comments}</span>
-        </div>
-      </div>
+      <EngagementActions likes={likes} comments={comments} />
     </div>
   );
 }; 
