@@ -1,56 +1,107 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Public domain videos that should work better
-const SAMPLE_VIDEOS = [
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
-];
-
-// Mock data generation
-const generateMockReels = (page: number, limit: number) => {
-  const startIndex = (page - 1) * limit;
-  
-  return Array.from({ length: limit }, (_, i) => {
-    const id = startIndex + i;
-    return {
-      id: `reel-${id}`,
-      videoUrl: SAMPLE_VIDEOS[id % SAMPLE_VIDEOS.length],
-      caption: `This is a sample reel caption for reel ${id}. #reels #sample #nextjs`,
-      likes: Math.floor(Math.random() * 10000),
-      comments: Math.floor(Math.random() * 1000),
-      createdAt: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
-    };
-  });
-};
+import { fetchVideosFromS3, getPresignedUrl, type S3VideoObject } from '../../../utils/s3';
 
 export async function GET(request: NextRequest) {
   // Get pagination parameters
   const searchParams = request.nextUrl.searchParams;
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '5');
+  const continuationToken = searchParams.get('token') || undefined;
   
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
+  // Log environment variables (make sure not to log actual secrets in production)
+  console.log('AWS_REGION:', process.env.AWS_REGION);
+  console.log('AWS_S3_BUCKET:', process.env.AWS_S3_BUCKET);
+  console.log('Has AWS_ACCESS_KEY_ID:', !!process.env.AWS_ACCESS_KEY_ID);
+  console.log('Has AWS_SECRET_ACCESS_KEY:', !!process.env.AWS_SECRET_ACCESS_KEY);
   
-  // Generate mock data
-  const reels = generateMockReels(page, limit);
-  
-  // Return response
-  return NextResponse.json({
-    reels,
-    pagination: {
-      page,
-      limit,
-      totalPages: 10, // Mock value
-      hasMore: page < 10, // Mock value
+  try {
+    // Get bucket name from environment variable
+    const bucketName = process.env.AWS_S3_BUCKET;
+    
+    if (!bucketName) {
+      console.error('S3 bucket name is not configured');
+      throw new Error('S3 bucket name is not configured');
     }
-  });
+    
+    console.log('Fetching videos from bucket:', bucketName);
+    
+    // Fetch videos from S3
+    const { videos, nextToken } = await fetchVideosFromS3(bucketName, limit, continuationToken);
+    
+    console.log('Videos fetched:', videos.length);
+    
+    if (videos.length > 0) {
+      // Log a sample of the first video
+      console.log('Sample video keys:', videos.slice(0, 2).map(v => v.key));
+    }
+    
+    // If no videos found in S3, return empty array
+    if (videos.length === 0) {
+      console.log('No videos found in S3');
+      
+      return NextResponse.json({
+        reels: [],
+        pagination: {
+          page,
+          limit,
+          hasMore: false
+        }
+      });
+    }
+    
+    // Transform S3 video data to reel format
+    // Use Promise.all to handle the async presigned URL generation
+    const reelsPromises = videos.map(async (video: S3VideoObject) => {
+      // Generate presigned URL for secure access
+      try {
+        const presignedUrl = await getPresignedUrl(bucketName, video.key);
+        
+        return {
+          id: video.id,
+          videoUrl: presignedUrl,
+          caption: `Reel #${video.id}`,
+          likes: Math.floor(Math.random() * 10000), // Placeholder
+          comments: Math.floor(Math.random() * 1000), // Placeholder
+          createdAt: video.lastModified?.toISOString() || new Date().toISOString(),
+        };
+      } catch (error) {
+        console.error(`Error generating presigned URL for ${video.key}:`, error);
+        return null;
+      }
+    });
+    
+    // Filter out any null values (failed URLs)
+    const reelsWithUrls = await Promise.all(reelsPromises);
+    const reels = reelsWithUrls.filter(r => r !== null);
+    
+    console.log('Final reels count:', reels.length);
+    
+    // Return response with pagination token for next page
+    return NextResponse.json({
+      reels,
+      pagination: {
+        page,
+        limit,
+        hasMore: !!nextToken,
+        nextToken: nextToken
+      }
+    });
+  } catch (error) {
+    // Log detailed error
+    console.error('Error fetching reels from S3:', error);
+    
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
+    // Return error response
+    return NextResponse.json(
+      {
+        error: 'Failed to fetch videos from S3',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
 } 
