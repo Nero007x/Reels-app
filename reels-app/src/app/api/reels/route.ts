@@ -7,8 +7,9 @@ export async function GET(request: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '5');
   const continuationToken = searchParams.get('token') || undefined;
+  const sessionId = searchParams.get('session') || undefined;
   
-  console.log('API Request - page:', page, 'limit:', limit, 'token:', continuationToken);
+  console.log('API Request - page:', page, 'limit:', limit, 'token:', continuationToken, 'session:', sessionId);
   
   // Log environment variables (make sure not to log actual secrets in production)
   console.log('AWS_REGION:', process.env.AWS_REGION);
@@ -48,7 +49,8 @@ export async function GET(request: NextRequest) {
           limit,
           hasMore: false,
           nextToken: undefined
-        }
+        },
+        message: 'No videos available at this time. Please try again later.'
       });
     }
     
@@ -98,9 +100,17 @@ export async function GET(request: NextRequest) {
     
     console.log('Final reels count:', reels.length);
     
+    // Only randomize if we have a session ID (which changes on each page refresh)
+    let finalReels = reels;
+    if (sessionId) {
+      // Randomize videos order before returning
+      finalReels = [...reels].sort(() => Math.random() - 0.5);
+      console.log('Videos randomized for session:', sessionId);
+    }
+    
     // Return response with pagination token for next page
     return NextResponse.json({
-      reels,
+      reels: finalReels,
       pagination: {
         page,
         limit,
