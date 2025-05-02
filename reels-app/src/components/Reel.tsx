@@ -70,15 +70,17 @@ export const Reel = ({ videoUrl, username, caption, likes, comments, isActive = 
   return (
     <div className={styles.reelContainer} onClick={togglePlay}>
       {!hasError ? (
-        <video 
-          ref={videoRef}
-          className={styles.reelVideo}
-          src={videoUrl}
-          loop
-          muted={isMuted}
-          playsInline
-          onError={handleVideoError}
-        />
+        <div className={styles.videoWrapper}>
+          <video 
+            ref={videoRef}
+            className={styles.reelVideo}
+            src={videoUrl}
+            loop
+            muted={isMuted}
+            playsInline
+            onError={handleVideoError}
+          />
+        </div>
       ) : (
         <div className={styles.errorContainer}>
           <p>Video could not be loaded</p>

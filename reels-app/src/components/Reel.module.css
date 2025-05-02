@@ -11,15 +11,47 @@
 
 .reelVideo {
   position: absolute;
+  width: auto;
   height: 100%;
-  /* Force 9:16 aspect ratio */
+  /* Force vertical aspect ratio */
   aspect-ratio: 9/16;
-  object-fit: cover;
+  object-fit: cover; /* Cover will crop the video to fit the container */
   z-index: 1;
-  max-width: 100%;
   /* Center the video */
   left: 50%;
   transform: translateX(-50%);
+  /* Add black bars if needed */
+  background-color: black;
+}
+
+/* Force videos to fit in vertical frame */
+@media (max-width: 767px) {
+  .reelVideo {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 100vh;
+  }
+}
+
+/* When device aspect ratio is wider than 9:16 */
+@media (min-aspect-ratio: 9/16) {
+  .reelVideo {
+    width: auto;
+    height: 100%;
+    max-width: calc(100vh * 9/16); /* Maximum width based on 9:16 ratio */
+  }
+}
+
+/* When device is narrower than 9:16 */
+@media (max-aspect-ratio: 9/16) {
+  .reelVideo {
+    width: 100%;
+    height: auto;
+    max-height: calc(100vw * 16/9); /* Maximum height based on 9:16 ratio */
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
 
 .controlsOverlay {
@@ -165,4 +197,20 @@
   word-break: break-all;
   margin-top: 10px;
   max-width: 90%;
+}
+
+.videoWrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: black;
+  /* Force 9:16 aspect ratio */
+  max-width: calc(100vh * 9/16); /* Set max-width based on height */
+  margin: 0 auto;
+  left: 50%;
+  transform: translateX(-50%);
 } 
