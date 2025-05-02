@@ -11,15 +11,47 @@
 
 .reelVideo {
   position: absolute;
+  width: auto;
   height: 100%;
-  /* Force 9:16 aspect ratio */
+  /* Force vertical aspect ratio */
   aspect-ratio: 9/16;
-  object-fit: cover;
+  object-fit: cover; /* Cover will crop the video to fit the container */
   z-index: 1;
-  max-width: 100%;
   /* Center the video */
   left: 50%;
   transform: translateX(-50%);
+  /* Add black bars if needed */
+  background-color: black;
+}
+
+/* Force videos to fit in vertical frame */
+@media (max-width: 767px) {
+  .reelVideo {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 100vh;
+  }
+}
+
+/* When device aspect ratio is wider than 9:16 */
+@media (min-aspect-ratio: 9/16) {
+  .reelVideo {
+    width: auto;
+    height: 100%;
+    max-width: calc(100vh * 9/16); /* Maximum width based on 9:16 ratio */
+  }
+}
+
+/* When device is narrower than 9:16 */
+@media (max-aspect-ratio: 9/16) {
+  .reelVideo {
+    width: 100%;
+    height: auto;
+    max-height: calc(100vw * 16/9); /* Maximum height based on 9:16 ratio */
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
 
 .controlsOverlay {
@@ -54,7 +86,7 @@
 
 .muteButton {
   position: absolute;
-  bottom: 150px;
+  bottom: 15px;
   right: 20px;
   background: none;
   border: none;
@@ -73,30 +105,11 @@
 
 .reelInfo {
   position: absolute;
-  bottom: 100px;
+  bottom: 20px;
   left: 20px;
   z-index: 3;
   color: white;
   max-width: 70%;
-}
-
-.userInfo {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #ccc;
-  margin-right: 10px;
-}
-
-.username {
-  font-weight: bold;
-  font-size: 1rem;
 }
 
 .caption {
@@ -131,16 +144,16 @@
 /* Media query for smaller screens */
 @media (max-width: 767px) {
   .reelInfo {
-    bottom: 80px;
+    bottom: 70px;
     max-width: 80%;
   }
   
   .engagementActions {
-    bottom: 80px;
+    bottom: 110px;
   }
   
   .muteButton {
-    bottom: 130px;
+    bottom: 20px;
   }
 }
 
@@ -165,4 +178,20 @@
   word-break: break-all;
   margin-top: 10px;
   max-width: 90%;
+}
+
+.videoWrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: black;
+  /* Force 9:16 aspect ratio */
+  max-width: calc(100vh * 9/16); /* Set max-width based on height */
+  margin: 0 auto;
+  left: 50%;
+  transform: translateX(-50%);
 } 
