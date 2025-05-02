@@ -67,4 +67,28 @@
 
 .loadingMore {
   height: 50px;
-} 
+}
+
+.errorContainer {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+.errorContainer h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.errorContainer p {
+  margin-bottom: 1.5rem;
+  max-width: 80%;
+  color: rgba(255, 255, 255, 0.7);
+}

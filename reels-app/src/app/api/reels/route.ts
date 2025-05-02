@@ -8,6 +8,8 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get('limit') || '5');
   const continuationToken = searchParams.get('token') || undefined;
   
+  console.log('API Request - page:', page, 'limit:', limit, 'token:', continuationToken);
+  
   // Log environment variables (make sure not to log actual secrets in production)
   console.log('AWS_REGION:', process.env.AWS_REGION);
   console.log('AWS_S3_BUCKET:', process.env.AWS_S3_BUCKET);
@@ -23,12 +25,12 @@ export async function GET(request: NextRequest) {
       throw new Error('S3 bucket name is not configured');
     }
     
-    console.log('Fetching videos from bucket:', bucketName);
+    console.log('Fetching videos from bucket:', bucketName, 'with token:', continuationToken);
     
-    // Fetch videos from S3
+    // Fetch videos from S3 using the continuation token for pagination
     const { videos, nextToken } = await fetchVideosFromS3(bucketName, limit, continuationToken);
     
-    console.log('Videos fetched:', videos.length);
+    console.log('Videos fetched:', videos.length, 'Next token:', nextToken);
     
     if (videos.length > 0) {
       // Log a sample of the first video
@@ -44,7 +46,8 @@ export async function GET(request: NextRequest) {
         pagination: {
           page,
           limit,
-          hasMore: false
+          hasMore: false,
+          nextToken: undefined
         }
       });
     }
@@ -54,7 +57,26 @@ export async function GET(request: NextRequest) {
     const reelsPromises = videos.map(async (video: S3VideoObject) => {
       // Generate presigned URL for secure access
       try {
-        const presignedUrl = await getPresignedUrl(bucketName, video.key);
+        // Try up to 3 times to get a presigned URL
+        let presignedUrl = null;
+        let attempts = 0;
+        const maxAttempts = 3;
+        
+        while (!presignedUrl && attempts < maxAttempts) {
+          try {
+            attempts++;
+            presignedUrl = await getPresignedUrl(bucketName, video.key);
+          } catch (urlError) {
+            console.error(`Error generating presigned URL for ${video.key} (attempt ${attempts}/${maxAttempts}):`, urlError);
+            // Wait briefly before retrying
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+        
+        if (!presignedUrl) {
+          console.error(`Failed to generate presigned URL for ${video.key} after ${maxAttempts} attempts`);
+          return null;
+        }
         
         return {
           id: video.id,
@@ -85,6 +107,12 @@ export async function GET(request: NextRequest) {
         hasMore: !!nextToken,
         nextToken: nextToken
       }
+    }, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      }
     });
   } catch (error) {
     // Log detailed error
@@ -101,7 +129,27 @@ export async function GET(request: NextRequest) {
         error: 'Failed to fetch videos from S3',
         message: error instanceof Error ? error.message : 'Unknown error'
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type'
+        }
+      }
     );
   }
-} 
+}
+
+// Handle CORS preflight requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400'
+    }
+  });
+}

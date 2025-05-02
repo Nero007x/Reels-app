@@ -21,6 +21,11 @@ export const Reel = ({ videoUrl, caption, likes, comments, isActive = false }: R
   const videoRef = useRef<HTMLVideoElement>(null);
   const { isMuted } = useMuteContext();
 
+  // Reset error state when video URL changes
+  useEffect(() => {
+    setHasError(false);
+  }, [videoUrl]);
+
   // Handle play/pause
   const togglePlay = () => {
     if (videoRef.current && !hasError) {
@@ -80,12 +85,13 @@ export const Reel = ({ videoUrl, caption, likes, comments, isActive = false }: R
             muted={isMuted}
             playsInline
             onError={handleVideoError}
+            preload="metadata"
           />
         </div>
       ) : (
         <div className={styles.errorContainer}>
           <p>Video could not be loaded</p>
-          <p className={styles.errorUrl}>{videoUrl}</p>
+          <p className={styles.errorUrl}>Please check your connection</p>
         </div>
       )}
       
@@ -105,4 +111,4 @@ export const Reel = ({ videoUrl, caption, likes, comments, isActive = false }: R
       <EngagementActions likes={likes} comments={comments} />
     </div>
   );
-}; 
+};
