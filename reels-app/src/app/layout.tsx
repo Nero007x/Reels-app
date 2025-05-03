@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MuteProvider } from "../context/MuteContext";
+import { GenerateReelButton } from '@/components/GenerateReelButton';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,8 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <MuteProvider>
+          <GenerateReelButton />
+          {/* App content */}
           {children}
         </MuteProvider>
       </body>
