@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateAndUploadReel } from '@/lib/generateAndUploadReel';
+import { generateAndUploadReel } from '@/service/generateAndUploadReel';
 
 export async function POST(req: NextRequest) {
   try {

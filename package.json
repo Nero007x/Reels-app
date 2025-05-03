@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.799.0",
+    "@runwayml/sdk": "^2.0.2",
+    "axios": "^1.9.0"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.9.36"
+  }
+}

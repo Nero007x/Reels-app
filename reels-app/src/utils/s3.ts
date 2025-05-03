@@ -1,4 +1,4 @@
-import { S3Client, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, ListObjectsV2Command, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -35,7 +35,7 @@ export async function fetchVideosFromS3(
       Bucket: bucketName,
       MaxKeys: limit,
       ContinuationToken: continuationToken,
-      // No prefix filter - search in the root of the bucket
+      Prefix: 'reels/', // Only fetch videos from the 'reels/' folder
     });
 
     const response = await s3Client.send(command);
@@ -89,6 +89,35 @@ export async function getPresignedUrl(
     return url;
   } catch (error) {
     console.error('Error generating presigned URL:', error);
+    throw error;
+  }
+}
+
+/**
+ * Upload an image to S3
+ * @param bucketName The S3 bucket name
+ * @param key The object key (e.g., 'image/filename.png')
+ * @param imageBuffer The image data as a Buffer
+ * @param contentType The MIME type (e.g., 'image/png')
+ * @returns The S3 object key
+ */
+export async function uploadImageToS3(
+  bucketName: string,
+  key: string,
+  imageBuffer: Buffer,
+  contentType: string = 'image/png'
+): Promise<string> {
+  const command = new PutObjectCommand({
+    Bucket: bucketName,
+    Key: key,
+    Body: imageBuffer,
+    ContentType: contentType,
+  });
+  try {
+    await s3Client.send(command);
+    return key;
+  } catch (error) {
+    console.error('Error uploading image to S3:', error);
     throw error;
   }
 } 
