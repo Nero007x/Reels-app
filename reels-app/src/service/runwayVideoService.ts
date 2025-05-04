@@ -1,11 +1,10 @@
 import RunwayML from '@runwayml/sdk';
-import { generateAndUploadReel } from '@/service/generateAndUploadReel';
 
 const client = new RunwayML();
 
 export async function createVideo(
   images: string[],
-  promptText: string = 'A cinematic video'
+  promptText: string = 'A historical and cinematic video'
 ): Promise<string> {
   // Use the first image as the prompt image
   const promptImage = images[0];
@@ -16,6 +15,7 @@ export async function createVideo(
     promptImage,
     promptText,
     ratio: '720:1280',
+    duration: 5,
   });
 
   const taskId = imageToVideo.id;
