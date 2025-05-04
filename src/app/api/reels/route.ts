@@ -11,12 +11,6 @@ export async function GET(request: NextRequest) {
   
   console.log('API Request - page:', page, 'limit:', limit, 'token:', continuationToken, 'session:', sessionId);
   
-  // Log environment variables (make sure not to log actual secrets in production)
-  console.log('AWS_REGION:', process.env.AWS_REGION);
-  console.log('AWS_S3_BUCKET:', process.env.AWS_S3_BUCKET);
-  console.log('Has AWS_ACCESS_KEY_ID:', !!process.env.AWS_ACCESS_KEY_ID);
-  console.log('Has AWS_SECRET_ACCESS_KEY:', !!process.env.AWS_SECRET_ACCESS_KEY);
-  
   try {
     // Get bucket name from environment variable
     const bucketName = process.env.AWS_S3_BUCKET;
