@@ -2,6 +2,9 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+![IMG_1210](https://github.com/user-attachments/assets/cd2c3be9-758b-4a02-90d0-cc94c1722a03)
+
+
 
 
 First, run the development server:
