@@ -14,7 +14,7 @@ export async function synthesizeWithPolly(script: string): Promise<string> {
   const command = new SynthesizeSpeechCommand({
     OutputFormat: 'mp3',
     Text: script,
-    VoiceId: 'Joanna', // You can make this configurable
+    VoiceId: 'Joanna', 
     Engine: 'neural',
     LanguageCode: 'en-US',
   });

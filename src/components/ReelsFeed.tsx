@@ -43,9 +43,7 @@ export const ReelsFeed = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // Fetch reels from API
   const fetchReels = async () => {
-    // Prevent multiple simultaneous fetch calls
     if (isFetchingRef.current) return;
     
     try {
@@ -56,11 +54,10 @@ export const ReelsFeed = () => {
       const params = new URLSearchParams({
         page: pagination.page.toString(),
         limit: reelsPerPage.toString(),
-        // Add session ID to force randomization on page refresh
         session: SESSION_ID
       });
       
-      // Add token if we have one (important for pagination)
+      // Add token if we have one
       if (pagination.nextToken) {
         params.append('token', pagination.nextToken);
       }
@@ -76,12 +73,11 @@ export const ReelsFeed = () => {
       const data: ApiResponse = await response.json();
       console.log('API Response:', data);
       
-      // Add new reels to the existing list (for page 1, replace all reels)
       setReels(prev => pagination.page === 1 ? data.reels : [...prev, ...data.reels]);
       
       // Update pagination state with the token from the response
       setPagination({
-        page: data.pagination.page + 1, // Increment the page for next fetch
+        page: data.pagination.page + 1, 
         hasMore: data.pagination.hasMore,
         nextToken: data.pagination.nextToken
       });

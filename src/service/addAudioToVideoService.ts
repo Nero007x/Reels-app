@@ -13,7 +13,6 @@ const execAsync = promisify(exec);
 // Log FFmpeg path for debugging
 console.log('FFmpeg path:', ffmpegPath);
 
-// Custom error class for audio processing failures
 export class AudioProcessingError extends Error {
   constructor(message: string, public readonly originalError?: unknown) {
     super(message);

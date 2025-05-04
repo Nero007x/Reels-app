@@ -19,7 +19,6 @@ export async function uploadToS3(videoPath: string): Promise<string> {
 
   let videoBuffer: Buffer;
   if (videoPath.startsWith('http://') || videoPath.startsWith('https://')) {
-    // Download video from URL
     const res = await fetch(videoPath);
     if (!res.ok) throw new Error('Failed to fetch video from URL');
     videoBuffer = Buffer.from(await res.arrayBuffer());
@@ -36,6 +35,6 @@ export async function uploadToS3(videoPath: string): Promise<string> {
   });
   await s3Client.send(command);
 
-  // Return the S3 key (permanent path)
+  // Return the S3 key
   return key;
 } 

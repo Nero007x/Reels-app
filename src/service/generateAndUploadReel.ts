@@ -26,6 +26,6 @@ export async function generateAndUploadReel(celebrityName: string): Promise<void
     }
   }
   
-  // Upload the final video (either with audio or the original)
+  // Upload the final video
   await uploadToS3(finalVideoPath);
 } 
