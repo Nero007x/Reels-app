@@ -33,7 +33,7 @@ export function GenerateReelButton() {
             const data = await res.json();
             alert('Error: ' + (data.error || 'Unknown error'));
           }
-        } catch (e) {
+        } catch {
           alert('Network error.');
         }
       }}
